@@ -1,17 +1,31 @@
 import websockets
 import asyncio
+import platform
 import json
-import board
-from sensors.DHT import DHTSensor
+import time
+from sensors.DHT22 import DHTSensor
 from relays.relay_control import RelayControl
 
-class WebSocketClient:
-    def __init__(self, uri):
-        self.uri = uri
+# Conditional import for Adafruit board library (only for Raspberry Pi)
+if platform.system() == 'Linux':  # Raspberry Pi
+    import board
+else:
+    # Mock the board library for non-Linux platforms (macOS/Windows)
+    class board:
+        D11 = "D11"
+        # Add any other board pin constants you might use
 
-        # Load the configuration from config.json
-        with open('config.json', 'r') as config_file:
+
+
+class WebSocketClient:
+    def __init__(self, config_file='config.json'):
+        # Load the configuration from the config.json file
+        with open(config_file, 'r') as config_file:
             self.config = json.load(config_file)
+
+        # Fetch the WebSocket URL from the config file
+        self.uri = self.config["websocket_url_pi"]
+        self.retry_delay = 5
 
         # Dynamically get the board pin from the config file
         dht_data_pin = getattr(board, self.config['dht_sensor_data_pin'])  # e.g., board.D11
@@ -89,25 +103,44 @@ class WebSocketClient:
         """Main loop to listen for commands from the backend and execute actions."""
         try:
             async for message in websocket:
-                command = json.loads(message)
-                print(f"Received command: {command}")
-                await self.handle_commands(websocket, command)
+                if not message.strip():  # Check for empty or whitespace-only message
+                    print("Received empty or whitespace message, skipping...")
+                    continue
+
+                try:
+                    command = json.loads(message)  # Attempt to decode the JSON message
+                    print(f"Received command: {command}")
+                    await self.handle_commands(websocket, command)
+                except json.JSONDecodeError as e:
+                    print(f"Failed to decode JSON message: {e}. Received: {message}")
+                    error_response = json.dumps({"error": "Invalid JSON", "details": str(e)})
+                    await websocket.send(error_response)
+
         except websockets.exceptions.ConnectionClosed as e:
             print(f"Connection closed: {e}")
 
     async def gather_and_send(self):
         """Periodically gather sensor data and actuator status, and send it to the backend."""
-        async with websockets.connect(self.uri) as websocket:
-            while True:
-                # Send sensor and actuator data
-                await self.send_data(websocket)
-                await asyncio.sleep(5)  # Wait for 5 seconds before sending again
+        while True:
+            try:
+                async with websockets.connect(self.uri) as websocket:
+                    while True:
+                        # Send sensor and actuator data
+                        await self.send_data(websocket)
+                        await asyncio.sleep(5)  # Wait for 5 seconds before sending again
 
-                # Listen for commands from the backend
-                await self.listen_and_execute(websocket)
+                        # Listen for commands from the backend
+                        await self.listen_and_execute(websocket)
+            except (websockets.exceptions.ConnectionClosedError, OSError) as e:
+                # If connection fails, log the error and retry after delay
+                print(f"Connection error: {e}. Retrying in {self.retry_delay} seconds...")
+                await asyncio.sleep(self.retry_delay)
+
+                # Exponential backoff: Increase the retry delay up to a maximum of 60 seconds
+                self.retry_delay = min(self.retry_delay * 2, 60)
 
 async def main():
-    ws_client = WebSocketClient(uri="ws://192.168.88.27/ws")
+    ws_client = WebSocketClient()
     await ws_client.gather_and_send()
 
 if __name__ == "__main__":

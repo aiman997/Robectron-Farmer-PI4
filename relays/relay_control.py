@@ -1,5 +1,33 @@
 # relays/relay_control.py
-import RPi.GPIO as GPIO
+import platform
+
+# Conditional import: Use RPi.GPIO only if running on Raspberry Pi
+if platform.system() == 'Linux':  # Likely to be a Raspberry Pi
+    import RPi.GPIO as GPIO
+else:
+    # Mock GPIO class for non-Raspberry Pi systems (like macOS or Windows)
+    class GPIO:
+        BCM = "BCM"
+        OUT = "OUT"
+        LOW = "LOW"
+        HIGH = "HIGH"
+
+        @staticmethod
+        def setmode(mode):
+            print(f"Set mode to: {mode}")
+
+        @staticmethod
+        def setup(pin, mode):
+            print(f"Setup pin {pin} with mode {mode}")
+
+        @staticmethod
+        def output(pin, state):
+            print(f"Set pin {pin} to state {state}")
+
+        @staticmethod
+        def cleanup(pin=None):
+            print(f"Cleanup pin {pin}")
+
 
 class RelayControl:
     def __init__(self, pin):

@@ -1,7 +1,29 @@
-import adafruit_dht
-import board
+import platform
 from sensors.sensors_interface import SensorInterface
 from relays.relay_control import RelayControl
+
+# Conditional import for Adafruit board library (only for Raspberry Pi)
+if platform.system() == 'Linux':  # Raspberry Pi
+    import board
+    import adafruit_dht
+else:
+    # Mock the board library for non-Linux platforms (macOS/Windows)
+    class board:
+        D11 = "D11"
+        # Add any other board pin constants you might use
+    class adafruit_dht:
+        class DHT22:
+            def __init__(self, pin):
+                print(f"Mock DHT22 initialized with pin {pin}")
+            
+            @property
+            def temperature(self):
+                return 25.0  # Mock temperature value
+
+            @property
+            def humidity(self):
+                return 60.0  # Mock humidity value
+
 
 
 class DHTSensor(SensorInterface):

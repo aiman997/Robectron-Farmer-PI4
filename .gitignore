@@ -1,0 +1,11 @@
+# Virtual environment
+.venv/
+env/
+__pycache__/
+
+# OS-generated files
+.DS_Store
+
+# Cache
+*.pyc
+*.pyo
