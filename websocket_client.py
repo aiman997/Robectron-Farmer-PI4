@@ -107,7 +107,7 @@ class WebSocketClient:
                 await self.listen_and_execute(websocket)
 
 async def main():
-    ws_client = WebSocketClient(uri="ws://your-server-address")
+    ws_client = WebSocketClient(uri="ws://192.168.88.27/ws")
     await ws_client.gather_and_send()
 
 if __name__ == "__main__":
