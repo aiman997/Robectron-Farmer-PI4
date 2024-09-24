@@ -4,12 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-websockets = "*"
 adafruit-circuitpython-dht = "*"
+websockets = "*"
 w1thermsensor = "*"
 
 [dev-packages]
 
 [requires]
 python_version = "3.11"
-
