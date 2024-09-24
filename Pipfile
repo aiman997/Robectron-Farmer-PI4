@@ -3,6 +3,11 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[[source]]
+url = "https://www.piwheels.org/simple"
+verify_ssl = true
+name = "piwheels"
+
 [packages]
 adafruit-blinka = "==8.39.1"
 adafruit-circuitpython-busdevice = "==5.2.9"
@@ -15,9 +20,5 @@ Adafruit-PureIO = "==1.1.11"
 w1thermsensor = "==2.3.0"
 websockets = "*"
 
-[dev-packages]
-
 [requires]
 python_version = "3.11"
-
-
