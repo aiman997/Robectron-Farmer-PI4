@@ -1,3 +1,4 @@
+import time 
 import platform
 from sensors.sensors_interface import SensorInterface
 from relays.relay_control import RelayControl
@@ -37,6 +38,8 @@ class DHTSensor(SensorInterface):
         """Turn on the relay to provide power to the sensor."""
         self.power_relay.activate()
         self.status = "Powered On"
+        # Wait for 5 seconds to allow the sensor to stabilize
+        time.sleep(5)
 
     def power_off(self):
         """Turn off the relay to cut power to the sensor."""
