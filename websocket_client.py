@@ -15,8 +15,6 @@ else:
         D11 = "D11"
         # Add any other board pin constants you might use
 
-
-
 class WebSocketClient:
     def __init__(self, config_file='config.json'):
         # Load the configuration from the config.json file
@@ -38,6 +36,12 @@ class WebSocketClient:
         ec_pump_pin = self.config['ec_pump_pin']  # e.g., 18
         self.relay_actuators = {
             "EC_Pump": RelayControl(pin=ec_pump_pin),
+        }
+
+        # Dictionary to map sensor names to their corresponding methods
+        self.sensor_actions = {
+            "DHT22": self.gather_sensor_data,
+            # Add other sensors and their corresponding methods here
         }
 
     async def gather_sensor_data(self):
@@ -82,6 +86,7 @@ class WebSocketClient:
         """Handle commands received from the backend."""
         action = command.get("action")
         actuator_name = command.get("actuator")
+        sensor_name = command.get("sensor")
 
         if action == "activate":
             if actuator_name in self.relay_actuators:
@@ -94,6 +99,27 @@ class WebSocketClient:
                 self.relay_actuators[actuator_name].deactivate()
                 await websocket.send(f"{actuator_name} deactivated")
                 print(f"{actuator_name} deactivated")
+
+        elif action == "get_reading":
+            # Use the sensor_actions dictionary to look up the correct function
+            gather_sensor_data_fn = self.sensor_actions.get(sensor_name)
+
+            if gather_sensor_data_fn:
+                # Call the function associated with the sensor
+                sensor_info = await gather_sensor_data_fn()
+                await websocket.send(json.dumps({
+                    "status": "reading_received",
+                    "sensor": sensor_name,
+                    "data": sensor_info
+                }))
+                print(f"{sensor_name} sensor data sent: {sensor_info}")
+            else:
+                # Handle the case where the sensor is not recognized
+                await websocket.send(json.dumps({
+                    "status": "error",
+                    "message": f"Unrecognized sensor: {sensor_name}"
+                }))
+                print(f"Unrecognized sensor: {sensor_name}")
 
         elif action == "get_status":
             # If a status request is received, gather and send data
