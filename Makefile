@@ -13,8 +13,8 @@ install:
 	fi
 	@echo "Creating virtual environment with Python 3.11..."
 	pipenv --python /usr/bin/python3.11
-	@echo "Installing dependencies..."
-	pipenv install
+	@echo "Installing dependencies with --skip-lock..."
+	pipenv install --skip-lock
 
 # Activate virtual environment
 activate:

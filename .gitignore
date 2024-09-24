@@ -11,3 +11,6 @@ requirements.txt
 # Cache
 *.pyc
 *.pyo
+
+# Ignore Pipfile.lock
+Pipfile.lock
