@@ -2,6 +2,8 @@
 .venv/
 env/
 __pycache__/
+.env
+requirements.txt
 
 # OS-generated files
 .DS_Store

@@ -6,10 +6,10 @@ name = "pypi"
 [packages]
 websockets = "*"
 adafruit-circuitpython-dht = "*"
-adafruit-blinka = "*"
 w1thermsensor = "*"
 
 [dev-packages]
 
 [requires]
 python_version = "3.9"
+
