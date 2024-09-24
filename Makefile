@@ -24,7 +24,7 @@ activate:
 # Run the WebSocket client (for Raspberry Pi)
 run-client:
 	@echo "Running WebSocket client..."
-	pipenv run python websocket_client.py
+	$(ACTIVATE) && pipenv run python websocket_client.py
 
 # Clean up
 clean:
