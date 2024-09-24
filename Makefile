@@ -1,6 +1,7 @@
 # Makefile for Raspberry Pi 4 using Python 3.11
 
 # Virtual environment activation
+SHELL := /bin/bash
 VENV := ./.venv
 ACTIVATE := source $(VENV)/bin/activate
 
