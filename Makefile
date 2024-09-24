@@ -4,16 +4,21 @@
 VENV := ./.venv
 ACTIVATE := source $(VENV)/bin/activate
 
-# Install dependencies with retry logic for failures
+# Install dependencies and Python 3.9 if missing
 install:
-	@echo "Creating virtual environment and installing dependencies..."
-	# Install dependencies from Pipfile and retry if it fails
-	@if ! pipenv install --dev; then \
+	@echo "Checking if Python 3.9 is installed..."
+	@if ! python3.9 --version > /dev/null 2>&1; then \
+		echo "Python 3.9 not found. Installing Python 3.9..."; \
+		sudo apt update && sudo apt install -y python3.9 python3.9-venv python3.9-dev; \
+	fi
+	@echo "Python 3.9 is installed."
+	@echo "Creating virtual environment with Python 3.9 and installing dependencies..."
+	@if ! pipenv --python /usr/bin/python3.9 install --dev; then \
 	    echo "Initial installation failed. Retrying..."; \
 	    pipenv --clear; \
-	    pipenv install --dev; \
+	    pipenv --python /usr/bin/python3.9 install --dev; \
 	fi
-	# Generate requirements.txt from pip freeze
+	@echo "Generating requirements.txt from installed packages..."
 	@pipenv run pip freeze > requirements.txt || echo "Failed to generate requirements.txt, ensure all dependencies are installed."
 
 # Activate virtual environment
@@ -24,29 +29,15 @@ activate:
 # Run the WebSocket client (for Raspberry Pi)
 run-client:
 	@echo "Running WebSocket client..."
-	@pipenv run python websocket_client.py || echo "Failed to run WebSocket client."
-
-# Run FastAPI server (for non-Raspberry Pi environments)
-run-server:
-	@echo "Running FastAPI server on MacBook or host machine..."
-	@echo "FastAPI should NOT run on the Raspberry Pi."
-	@pipenv run uvicorn main:app --reload --host 0.0.0.0 --port 8000 || echo "Failed to run FastAPI server."
+	pipenv run python websocket_client.py
 
 # Clean up
 clean:
 	@echo "Removing virtual environment and cache files..."
-	@rm -rf $(VENV)
-	@rm -rf __pycache__
-	@rm -rf requirements.txt Pipfile.lock Pipfile
-	@echo "Cleaned up environment."
-
-# Install RPi.GPIO for Raspberry Pi
-install-rpi:
-	@echo "Installing RPi.GPIO..."
-	@pipenv install RPi.GPIO || echo "Failed to install RPi.GPIO."
+	rm -rf $(VENV)
+	rm -rf __pycache__
 
 # Install websockets for communication
 install-websockets:
 	@echo "Installing websockets..."
-	@pipenv install websockets || echo "Failed to install websockets."
-
+	pipenv install websockets
