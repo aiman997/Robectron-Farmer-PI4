@@ -1,0 +1,6 @@
+{
+    "dht_sensor_data_pin": "D11",
+    "dht_sensor_power_pin": 15,
+    "ec_pump_pin": 18,
+    "other_actuator_pin": 23
+}
