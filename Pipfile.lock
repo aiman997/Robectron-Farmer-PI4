@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "5effb33b943aa3060294acb42248870e5c4e509c63a6b91f927524ac3439902a"
+            "sha256": "ec913e3b487146efd61f4a4dcc4e2a5ab812d9ddd0ecd2e66fed92612ea2365e"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -18,25 +18,28 @@
     "default": {
         "adafruit-blinka": {
             "hashes": [
-                "sha256:436a856acc38bf9c5346db8c413ba2ada95e762f6aa97a7dbe238434ccbc8519",
-                "sha256:86fb1f831196587b94c62eab1695e5b78a685f54e31c53d70b377a8bd86ac81d"
+                "sha256:0db0b24345e77ec3815590fc987e946e12fda9effb18f8f15f2d150a64f53618",
+                "sha256:eb4bb91f31b13dc1caedbd2b60b260e4be6f848d5381ff514d2ce924bea1b0fa"
             ],
+            "index": "pypi",
             "markers": "python_full_version >= '3.7.0'",
-            "version": "==8.47.0"
+            "version": "==8.39.1"
         },
         "adafruit-circuitpython-busdevice": {
             "hashes": [
                 "sha256:78245c551eb3795a4f3739f1adac0b08a65c9fb0f722e866de620482cbbac51f",
                 "sha256:9f9c3df385091410dac5961918e475ec88faed7ff543ad6d74208f08c2566513"
             ],
+            "index": "pypi",
             "version": "==5.2.9"
         },
         "adafruit-circuitpython-connectionmanager": {
             "hashes": [
-                "sha256:0b6df0f18c25208b59a007f7dcde58d8b147643738a1cd9ac03f3b1ac0129540",
-                "sha256:652bf7ec8a12f5a8b086b4d3540d56c53dc82915a6a08b0b8e46a1b82b0ad535"
+                "sha256:32b0a2e38f703bf6e22d93e6929a301fe4e18fff6f68ad251521b8d250ef6436",
+                "sha256:a7164831e02c02792c65123d2931dfeb6e998456aa0da48a0effaaddc8af7691"
             ],
-            "version": "==3.1.1"
+            "index": "pypi",
+            "version": "==2.0.0"
         },
         "adafruit-circuitpython-dht": {
             "hashes": [
@@ -48,40 +51,37 @@
         },
         "adafruit-circuitpython-requests": {
             "hashes": [
-                "sha256:4a7435ecf13924c1143b3204e0695cf17c91e18010741a29088892d73feaafb6",
-                "sha256:faf9b8ce563763844126aefbddb2a7e4ea57e2edfeae589779df7d209c7dcd84"
+                "sha256:50e46e4a1ee9a4f2e832308468191b855424ebc468a0bc8c911c68df33918863",
+                "sha256:aca829e7a84bda37b8a70a867e28ae8c8aa27cbf596ea16f52805b0d2051be13"
             ],
-            "version": "==4.1.6"
+            "index": "pypi",
+            "version": "==3.2.8"
         },
         "adafruit-circuitpython-typing": {
             "hashes": [
-                "sha256:840b679aa966899496ff34ece5d7bee0c4bdec3102f41a086569c9788852324e",
-                "sha256:8855221f5cea28c6cc698d30ea748075c4bd170c42cf213fae09c80f24d8e4d9"
+                "sha256:4c5c1eeb3ae8a3d2dfa75129654c73690fbdb576d9069542a6ea3355467e1e74",
+                "sha256:4e23d6828deafa4dfd554fd7d3f06b8ff8e2cc554b9c7aecba9d778d45970c18"
             ],
+            "index": "pypi",
             "markers": "python_version >= '3.8'",
-            "version": "==1.11.0"
+            "version": "==1.10.3"
         },
         "adafruit-platformdetect": {
             "hashes": [
-                "sha256:74f5f5c8b1fef283792f4158070ea34b2cb39d4b2a892128ed0f0445efc66621",
-                "sha256:ad59adaa9563420a2f02c542bb7fa18209606bd2c93c64fccf3961c929a96daf"
+                "sha256:6e7b5c3ff3f47a842c8c84107092edb17b0f712ca5295354a7e7ff442fd4e66e",
+                "sha256:a82a86072963179f6bd5723e070b2e1786cc26d82fe8d3e40ff524b449d10abe"
             ],
-            "version": "==3.74.0"
+            "index": "pypi",
+            "version": "==3.63.0"
         },
         "adafruit-pureio": {
             "hashes": [
                 "sha256:281ab2099372cc0decc26326918996cbf21b8eed694ec4764d51eefa029d324e",
                 "sha256:c4cfbb365731942d1f1092a116f47dfdae0aef18c5b27f1072b5824ad5ea8c7c"
             ],
+            "index": "pypi",
             "markers": "python_full_version >= '3.5.0'",
             "version": "==1.1.11"
-        },
-        "binho-host-adapter": {
-            "hashes": [
-                "sha256:1e6da7a84e208c13b5f489066f05774bff1d593d0f5bf1ca149c2b8e83eae856",
-                "sha256:f71ca176c1e2fc1a5dce128beb286da217555c6c7c805f2ed282a6f3507ec277"
-            ],
-            "version": "==0.1.6"
         },
         "click": {
             "hashes": [
