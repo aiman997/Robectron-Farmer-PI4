@@ -4,6 +4,7 @@ import platform
 import json
 import time
 from sensors.DHT22 import DHTSensor
+from sensors.DS18B20 import DS18B20Sensor
 from relays.relay_control import RelayControl
 
 # Conditional import for Adafruit board library (only for Raspberry Pi)
@@ -26,35 +27,78 @@ class WebSocketClient:
         self.retry_delay = 5
 
         # Dynamically get the board pin from the config file
-        dht_data_pin = getattr(board, self.config['dht_sensor_data_pin'])  # e.g., board.D11
-        dht_power_pin = self.config['dht_sensor_power_pin']  # e.g., 27
+        dht_data_pin = getattr(board, self.config['dht_sensor_data_pin'])  # board.D11
+        dht_power_pin = self.config['dht_sensor_power_pin']
+        ds18b20_power_pin = self.config['ds18b20_sensor_power_pin']
+        ec_pump_pin = self.config['ec_pump_pin']  # e.g., 18
+
 
         # Initialize the DHT sensor with the configuration
         self.dht_sensor = DHTSensor(data_pin=dht_data_pin, power_relay_pin=dht_power_pin)
 
+        # Initialize the DS18B20 sensor with power relay pin from the config file
+        self.ds18b20_sensor = DS18B20Sensor(power_relay_pin=ds18b20_power_pin)
+
         # Initialize actuators using the configuration
-        ec_pump_pin = self.config['ec_pump_pin']  # e.g., 18
         self.relay_actuators = {
             "EC_Pump": RelayControl(pin=ec_pump_pin),
         }
 
         # Dictionary to map sensor names to their corresponding methods
-        self.sensor_actions = {
-            "DHT22": self.gather_sensor_data,
-            # Add other sensors and their corresponding methods here
+        # self.sensor_actions = {
+        #     "DHT22": self.gather_sensor_data,
+        #     "DS18B20": self.gather_ds18b20_data,
+        #     # Add other sensors and their corresponding methods here
+        # }
+
+        # Dictionary to map sensor names to their sensor instances
+        self.sensors = {
+            "DHT22": self.dht_sensor,
+            "DS18B20": self.ds18b20_sensor,
         }
 
-    async def gather_sensor_data(self):
-        """Gather data from the DHT sensor."""
-        # Get DHT22 sensor data (temperature and humidity)
-        sensor_data = self.dht_sensor.read_value()
-        sensor_status = self.dht_sensor.get_status()
+    # async def gather_sensor_data(self):
+    #     """ Gathers data from a specific sensor or all sensors.
+    #         If sensor_name is None, it gathers data from all sensors.
+    #         Otherwise, it gathers data from the specified sensor.
+    #     """
+    #     # Get DHT22 sensor data (temperature and humidity)
+    #     sensor_data = self.dht_sensor.read_value()
+    #     sensor_status = self.dht_sensor.get_status()
 
-        # Return the gathered sensor data and status
-        return {
-            "sensor_data": sensor_data,
-            "sensor_status": sensor_status
-        }
+    #     # Return the gathered sensor data and status
+    #     return {
+    #         "sensor_data": sensor_data,
+    #         "sensor_status": sensor_status
+    #     }
+
+
+    async def gather_data(self, sensor_name=None):
+        """
+        Gathers data from a specific sensor or all sensors.
+        If sensor_name is None, it gathers data from all sensors.
+        Otherwise, it gathers data from the specified sensor.
+        """
+        if sensor_name is None:
+            # Gather data from all sensors
+            all_sensor_data = {}
+            for sensor_name, sensor_instance in self.sensors.items():
+                sensor_data = sensor_instance.read_value()
+                sensor_status = sensor_instance.get_status()
+                all_sensor_data[sensor_name] = {
+                    "sensor_data": sensor_data,
+                    "sensor_status": sensor_status
+                }
+            return all_sensor_data
+        else:
+            # Gather data from the specified sensor
+            sensor_instance = self.sensors.get(sensor_name)
+            if sensor_instance:
+                sensor_data = sensor_instance.read_value()
+                sensor_status = sensor_instance.get_status()
+                return {sensor_name: {"sensor_data": sensor_data, "sensor_status": sensor_status}}
+            else:
+                raise ValueError(f"Sensor '{sensor_name}' not recognized.")
 
     async def gather_actuator_status(self):
         """Get the status of all actuators (i.e., relays)."""
@@ -62,25 +106,44 @@ class WebSocketClient:
         for name, relay in self.relay_actuators.items():
             actuator_status[name] = relay.get_status()
         return actuator_status
-
+    
     async def send_data(self, websocket):
         """Send sensor data and actuator status to the backend via WebSocket."""
-        # Gather data from DHT sensor
-        sensor_info = await self.gather_sensor_data()
+        # Gather data from all sensors
+        sensor_info = await self.gather_data()
 
         # Gather actuator statuses (e.g., status of EC pump relay)
         actuator_info = await self.gather_actuator_status()
 
         # Combine sensor data and actuator status into one payload
         payload = {
-            "sensor_data": sensor_info["sensor_data"],
-            "sensor_status": sensor_info["sensor_status"],
+            "sensor_data": sensor_info,
             "actuator_status": actuator_info
         }
 
         # Send the payload as JSON to the WebSocket server
         await websocket.send(json.dumps(payload))
         print(f"Data sent: {payload}")
+
+
+    # async def send_data(self, websocket):
+    #     """Send sensor data and actuator status to the backend via WebSocket."""
+    #     # Gather data from DHT sensor
+    #     sensor_info = await self.gather_sensor_data()
+
+    #     # Gather actuator statuses (e.g., status of EC pump relay)
+    #     actuator_info = await self.gather_actuator_status()
+
+    #     # Combine sensor data and actuator status into one payload
+    #     payload = {
+    #         "sensor_data": sensor_info["sensor_data"],
+    #         "sensor_status": sensor_info["sensor_status"],
+    #         "actuator_status": actuator_info
+    #     }
+
+    #     # Send the payload as JSON to the WebSocket server
+    #     await websocket.send(json.dumps(payload))
+    #     print(f"Data sent: {payload}")
 
     async def handle_commands(self, websocket, command):
         """Handle commands received from the backend."""
@@ -171,3 +234,9 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+# Gather data from all sensors:
+# curl -X POST "http://localhost:8000/send-command/" -H "Content-Type: application/json" -d '{"action": "get_reading", "sensor": "all"}'
+
+# Gather data from a specific sensor (e.g., DHT22):
+# curl -X POST "http://localhost:8000/send-command/" -H "Content-Type: application/json" -d '{"action": "get_reading", "sensor": "DHT22"}'
