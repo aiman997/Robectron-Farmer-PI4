@@ -1,5 +1,6 @@
 #ADS1115.py
-import smbus
+# import smbus
+import smbus2 as smbus
 import time
 
 # Get I2C bus
