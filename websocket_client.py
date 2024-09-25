@@ -3,6 +3,7 @@ import time
 import websockets
 import asyncio
 import platform
+from sensors.EC import ECSensor
 from sensors.DHT22 import DHTSensor
 from sensors.DS18B20 import DS18B20Sensor
 from relays.relay_control import RelayControl
@@ -24,13 +25,13 @@ class WebSocketClient:
 
         # Fetch the WebSocket URL from the config file
         self.uri = self.config["websocket_url_pi"]
-        self.retry_delay = 5
+        self.retry_delay = 10
 
         # Dynamically get the board pin from the config file
         dht_data_pin = getattr(board, self.config['dht_sensor_data_pin'])  # board.D11
         dht_power_pin = self.config['dht_sensor_power_pin']
         ds18b20_power_pin = self.config['ds18b20_sensor_power_pin']
-        ec_pump_pin = self.config['ec_pump_pin']  # e.g., 18
+        ec_power_pin = self.config['ec_sensor_power_pin']
 
 
         # Initialize the DHT sensor with the configuration
@@ -39,7 +40,11 @@ class WebSocketClient:
         # Initialize the DS18B20 sensor with power relay pin from the config file
         self.ds18b20_sensor = DS18B20Sensor(power_relay_pin=ds18b20_power_pin)
 
+        # Initialize the EC sensor
+        self.ec_sensor = ECSensor(power_relay_pin=ec_power_pin)
+
         # Initialize actuators using the configuration
+        ec_pump_pin = self.config['ec_pump_pin']
         self.relay_actuators = {
             "EC_Pump": RelayControl(pin=ec_pump_pin),
         }
@@ -48,6 +53,7 @@ class WebSocketClient:
         self.sensors = {
             "DHT22": self.dht_sensor,
             "DS18B20": self.ds18b20_sensor,
+            "EC": self.ec_sensor,
         }
 
     async def gather_data(self, sensor_name=None):
