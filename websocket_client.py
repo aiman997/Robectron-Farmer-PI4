@@ -1,8 +1,8 @@
+import json
+import time
 import websockets
 import asyncio
 import platform
-import json
-import time
 from sensors.DHT22 import DHTSensor
 from sensors.DS18B20 import DS18B20Sensor
 from relays.relay_control import RelayControl
@@ -163,24 +163,27 @@ class WebSocketClient:
         except websockets.exceptions.ConnectionClosed as e:
             print(f"Connection closed: {e}")
 
+    async def gather_data_periodically(self, websocket, interval=60):
+        """Periodically gather sensor data and send it to the backend."""
+        while True:
+            await self.send_data(websocket)
+            await asyncio.sleep(interval)
+
     async def gather_and_send(self):
-        """Periodically gather sensor data and actuator status, and send it to the backend."""
+        """Main function to gather and send data periodically and listen for commands."""
         while True:
             try:
                 async with websockets.connect(self.uri) as websocket:
-                    while True:
-                        # Send sensor and actuator data
-                        await self.send_data(websocket)
-                        await asyncio.sleep(5)  # Wait for 5 seconds before sending again
+                    # Run both gather_data_periodically and listen_for_commands concurrently
+                    gather_task = asyncio.create_task(self.gather_data_periodically(websocket, 60))
+                    listen_task = asyncio.create_task(self.listen_and_execute(websocket))
 
-                        # Listen for commands from the backend
-                        await self.listen_and_execute(websocket)
+                    # Wait for both tasks to run concurrently
+                    await asyncio.gather(gather_task, listen_task)
+
             except (websockets.exceptions.ConnectionClosedError, OSError) as e:
-                # If connection fails, log the error and retry after delay
                 print(f"Connection error: {e}. Retrying in {self.retry_delay} seconds...")
                 await asyncio.sleep(self.retry_delay)
-
-                # Exponential backoff: Increase the retry delay up to a maximum of 60 seconds
                 self.retry_delay = min(self.retry_delay * 2, 60)
 
 async def main():
