@@ -7,6 +7,13 @@ install:
 		echo "Python 3.11 not found. Installing Python 3.11..."; \
 		sudo apt update && sudo apt install -y python3.11 python3.11-venv python3.11-dev; \
 	fi
+	@echo "Checking operating system..."
+	if [ "$$(uname)" = "Linux" ]; then \
+		echo "Detected Linux. Installing smbus for Raspberry Pi..."; \
+		sudo apt-get install -y python3-smbus; \
+	else \
+		echo "Non-Linux OS detected. Skipping smbus installation."; \
+	fi
 	@echo "Creating virtual environment with Python 3.11..."
 	pipenv --python /usr/bin/python3.11
 	@echo "Installing dependencies with --skip-lock..."
